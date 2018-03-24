@@ -1,4 +1,4 @@
-package mzonex.excel.tools.services;
+package mzonex.excel.tools.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,8 +17,11 @@ import java.nio.file.Path;
 public abstract class ExcelImporter extends AbsImporter {
 
 	private static final Logger log = LogManager.getLogger(ExcelImporter.class);
+	private Workbook workbook;
 
-	protected Workbook workbook;
+	protected Workbook getWorkbook() {
+		return workbook;
+	}
 
 	@Override
 	protected boolean readFile(Path path) throws IOException {

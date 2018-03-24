@@ -37,7 +37,7 @@ public class ExcelPvTemplate extends ExcelImporter {
             Cell cell;
 
             // print location
-            cell = sheet.getRow(10).getCell(5);
+            cell = sheet.getRow(9).getCell(5);
             cell.setCellType(CellType.STRING);
             cell.setCellValue(customer.getLocation());
 
@@ -75,6 +75,12 @@ public class ExcelPvTemplate extends ExcelImporter {
         });
 
         log.debug("---- Start processing -- end");
+
+        try {
+            workbook.close();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
 
         return false;
     }

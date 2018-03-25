@@ -3,10 +3,7 @@ package mzonex.excel.tools.worker;
 import lombok.extern.slf4j.Slf4j;
 import mzonex.excel.tools.entity.Customer;
 import mzonex.excel.tools.repository.CustomerRp;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +27,9 @@ public class ExcelPvTemplate extends ExcelImporter {
         List<Customer> customerList = customerRp.findAll();
 
         log.debug("---- Start processing");
+
+        // create evaluator
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 
         customerList.forEach(customer -> {
             log.debug("---- reading customer: {} - {}", customer.getCodeKh(), customer.getCustomername());
@@ -71,6 +71,8 @@ public class ExcelPvTemplate extends ExcelImporter {
             cell.setCellType(CellType.NUMERIC);
             cell.setCellValue(customer.getTNam1());
 
+            // evaluate the formula
+            evaluateAllHelper(evaluator, sheet);
             writeWorkbook(workbook, customer.getCustomername());
         });
 
@@ -83,6 +85,25 @@ public class ExcelPvTemplate extends ExcelImporter {
         }
 
         return false;
+    }
+
+    private void evaluateAllHelper(final FormulaEvaluator evaluator, Sheet sheet) {
+        for (Row r : sheet) {
+            for (Cell c : r) {
+                evaluateCellHelper(evaluator, c);
+            }
+        }
+    }
+
+    private void evaluateCellHelper(final FormulaEvaluator evaluator, Cell cell) {
+        if (cell.getCellTypeEnum() == CellType.FORMULA) {
+            log.debug("---- evaluate function: {}", cell.getCellFormula());
+            try {
+                evaluator.evaluateFormulaCellEnum(cell);
+            } catch (Exception e) {
+                log.error("---- can not evaluate cell {}: {}", cell.getAddress(), e.getMessage());
+            }
+        }
     }
 
     private void writeWorkbook(Workbook workbook, String fileName) {
